@@ -27,21 +27,21 @@ $container['config'] = require 'config/global.php';
 $container += require 'config/di.global.php';
 
 // Checks the existence of the file and class to load the controller
-if (file_exists($cPath)) {
-    include $cPath;
-    if (class_exists('\\Controllers\\'.$c)) {
+if (file_exists($controllerPath)) {
+    include $controllerPath;
+    if (class_exists('\\Controllers\\'.$controller)) {
         //dynamically instantiate the controller
-        $cObject = $container['Controllers\\'. $c]($container);
+        $controllerObject = $container['Controllers\\'. $controller]($container);
         //check that the method (action) exists
-        if (method_exists($cObject, $a)) {
+        if (method_exists($controllerObject, $action)) {
             //dynamic call of the method
-            $cObject->$a();
+            $controllerObject->$action();
         } else {
-            die('La methode '.$a." n'existe pas");
+            die('La methode '.$action." n'existe pas");
         }
     } else {
-        die('La class controller '.$c." n'existe pas");
+        die('La class controller '.$controller." n'existe pas");
     }
 } else {
-    die('Le fichier controller '.$c." n'existe pas");
+    die('Le fichier controller '.$controller." n'existe pas");
 }
