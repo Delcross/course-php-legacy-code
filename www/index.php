@@ -1,42 +1,47 @@
 <?php
+use Core\Routing;
 
-require "conf.inc.php";
-
-function myAutoloader($class){
-	$classPath = "core/".$class.".class.php";
-	$classModel = "models/".$class.".class.php";
-	if(file_exists($classPath)){
-		include $classPath;
-	}else if(file_exists($classModel)){
-		include $classModel;
-	}
+function myAutoloader($class)
+{
+	//var_dump($class);
+	$classname = substr($class, strpos($class, '\\') + 1);
+    $classPath = 'Core/'.$classname.'.php';
+    $classModel = 'Models/'.$classname.'.php';
+    if (file_exists($classPath)) {
+        include $classPath;
+    } elseif (file_exists($classModel)) {
+        include $classModel;
+    }
 }
 
-// La fonction myAutoloader est lancé sur la classe appelée n'est pas trouvée
-spl_autoload_register("myAutoloader");
+// The myAutoloader function is launched on the called class is not found
+spl_autoload_register('myAutoloader');
 
-// Récupération des paramètres dans l'url - Routing
-$slug = explode("?", $_SERVER["REQUEST_URI"])[0];
+// Retrieving parameters from the url - Routing
+$slug = explode('?', $_SERVER['REQUEST_URI'])[0];
 $routes = Routing::getRoute($slug);
 extract($routes);
 
-// Vérifie l'existence du fichier et de la classe pour charger le controlleur
-if( file_exists($cPath) ){
-	include $cPath;
-	if( class_exists($c)){
-		//instancier dynamiquement le controller
-		$cObject = new $c();
-		//vérifier que la méthode (l'action) existe
-		if( method_exists($cObject, $a) ){
-			//appel dynamique de la méthode	
-			$cObject->$a();
-		}else{
-			die("La methode ".$a." n'existe pas");
-		}
-		
-	}else{
-		die("La class controller ".$c." n'existe pas");
-	}
-}else{
-	die("Le fichier controller ".$c." n'existe pas");
+$container = [];
+$container['config'] = require 'config/global.php';
+$container += require 'config/di.global.php';
+
+// Checks the existence of the file and class to load the controller
+if (file_exists($cPath)) {
+    include $cPath;
+    if (class_exists('\\Controllers\\'.$c)) {
+        //dynamically instantiate the controller
+        $cObject = $container['Controllers\\'. $c]($container);
+        //check that the method (action) exists
+        if (method_exists($cObject, $a)) {
+            //dynamic call of the method
+            $cObject->$a();
+        } else {
+            die('La methode '.$a." n'existe pas");
+        }
+    } else {
+        die('La class controller '.$c." n'existe pas");
+    }
+} else {
+    die('Le fichier controller '.$c." n'existe pas");
 }
