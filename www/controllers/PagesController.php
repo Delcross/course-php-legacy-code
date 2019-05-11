@@ -6,7 +6,7 @@ class PagesController
 {
     public function defaultAction()
     {
-        $v = new Viewassign('homepage', 'back');
-        $v->assign('pseudo', 'prof');
+        $view = new Viewassign('homepage', 'back');
+        $view->assign('pseudo', 'prof');
     }
 }
